@@ -81,3 +81,26 @@ def preparevocab(lang1, lang2,file_path):
     print("{} : {}".format(f_vocab.name, f_vocab.n_words))
     print("{} : {}".format(expans_vocab.name, expans_vocab.n_words))
     return f_vocab, expans_vocab,factors,expansions
+
+import torch
+from torch.utils.data import Dataset
+from tqdm import tqdm
+
+class InputFeatures(object):
+  #to process data into ids
+  def __init__(self,input_ids,target_ids):
+    self.input_ids = input_ids
+    self.target_ids =target_ids
+
+
+def process_dataset(factors,expansions,lang1,lang2,block_size=30):
+    #target
+    exps = expansions
+    exps_tokens= indexesFromSentence(lang2,expansions)[:block_size-2]
+    target_ids =[0]+exps_tokens+[1] #add bos and eos indexes
+
+    #source
+    facts = factors
+    facts_tokens=indexesFromSentence(lang1,factors)[:block_size-2]
+    source_ids =  [0]+facts_tokens+[1] #add bos and eos indexes
+    return InputFeatures(source_ids,target_ids)
