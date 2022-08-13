@@ -4,7 +4,10 @@ import torch.nn as nn
 from torch.nn import Transformer
 import math
 
-
+if torch.cuda.is_available():
+    device = 'cuda'
+else:
+    device = 'cpu'
 def generate_square_subsequent_mask(sz):
     mask = (torch.triu(torch.ones((sz, sz), device=device)) == 1).transpose(0, 1)
     mask = mask.float().masked_fill(mask == 0, float('-inf')).masked_fill(mask == 1, float(0.0))
@@ -68,7 +71,7 @@ class Seq2SeqTransformer(nn.Module):
         tgt_emb = self.positional_encoding(self.tgt_tok_emb(trg))
         outs = self.transformer(src_emb, tgt_emb, src_mask, tgt_mask, None,
                                 src_padding_mask, tgt_padding_mask, memory_key_padding_mask)
-        return self.generator(outs)
+        return self.fc(outs)
 
     def encode(self, src, src_mask):
         return self.transformer.encoder(self.positional_encoding(self.src_tok_emb(src)), src_mask)
