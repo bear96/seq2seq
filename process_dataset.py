@@ -1,7 +1,7 @@
 import re
 import torch
 import torch.nn as nn
-from torch.nn.utils.data import Dataset
+from torch.utils.data import Dataset
 
 SOS_token = 0
 EOS_token = 1
