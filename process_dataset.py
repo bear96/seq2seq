@@ -92,7 +92,7 @@ class InputFeatures(object):
     self.target_ids =target_ids
 
 
-def process_dataset(factors,expansions,lang1,lang2,block_size=30):
+def raw_data_to_features(factors,expansions,lang1,lang2,block_size=30):
     #target
     exps = expansions
     exps_tokens= indexesFromSentence(lang2,expansions)[:block_size-2]
@@ -110,7 +110,7 @@ class PolyData(Dataset):
         self.examples = []
         for i in tqdm(range(len(factors)),desc = "Processing dataset..."):
           fact,exp = factors[i],expansions[i]
-          self.examples.append(convert_examples_to_features(fact,exp,lang1,lang2,block_size=30))
+          self.examples.append(raw_data_to_features(fact,exp,lang1,lang2,block_size=30))
     def __len__(self):
         return len(self.examples)
 
