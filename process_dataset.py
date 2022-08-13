@@ -1,5 +1,5 @@
 import re
-
+import torch
 
 SOS_token = 0
 EOS_token = 1
@@ -72,12 +72,12 @@ MAX_LENGTH = 30
 
 def preparevocab(lang1, lang2,file_path):
     f_vocab,expans_vocab, factors,expansions = readLangs(lang1,lang2, file_path)
-    print("Read %s sentence pairs" % len(factors))
+    print("Reading %s sentence pairs" % len(factors))
     print("Building Polynomial vocabulary...")
     for i in tqdm(range(len(factors))):
         f_vocab.addSentence(factors[i])
         expans_vocab.addSentence(expansions[i])
     print("Counted words:")
-    print(f_vocab.name, f_vocab.n_words)
-    print(expans_vocab.name, expans_vocab.n_words)
+    print("{} : {}".format(f_vocab.name, f_vocab.n_words))
+    print("{} : {}".format(expans_vocab.name, expans_vocab.n_words))
     return f_vocab, expans_vocab,factors,expansions
