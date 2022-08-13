@@ -198,5 +198,6 @@ def get_score(test_data,preds):
   return c/len(preds),actuals
 
 
- 
+train()
+test()
 
