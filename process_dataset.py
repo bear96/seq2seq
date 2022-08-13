@@ -1,5 +1,7 @@
 import re
 import torch
+import torch.nn as nn
+from torch.nn.utils.data import Dataset
 
 SOS_token = 0
 EOS_token = 1
@@ -104,3 +106,16 @@ def process_dataset(factors,expansions,lang1,lang2,block_size=30):
     facts_tokens=indexesFromSentence(lang1,factors)[:block_size-2]
     source_ids =  [0]+facts_tokens+[1] #add bos and eos indexes
     return InputFeatures(source_ids,target_ids)
+
+#custom dataset
+class PolyData(Dataset):
+    def __init__(self, lang1,lang2, factors,expansions):
+        self.examples = []
+        for i in tqdm(range(len(factors)),desc = "Processing dataset..."):
+          fact,exp = factors[i],expansions[i]
+          self.examples.append(convert_examples_to_features(fact,exp,lang1,lang2,block_size=30))
+    def __len__(self):
+        return len(self.examples)
+
+    def __getitem__(self, indx):       
+        return torch.tensor(self.examples[indx].input_ids),torch.tensor(self.examples[indx].target_ids)
