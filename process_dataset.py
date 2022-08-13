@@ -2,6 +2,7 @@ import re
 import torch
 import torch.nn as nn
 from torch.utils.data import Dataset
+from tqdm import tqdm
 
 SOS_token = 0
 EOS_token = 1
@@ -69,7 +70,6 @@ def tensorsFromPair(lang1,lang2, factors, expansions):
     return (input_tensor, target_tensor)
 
 
-from tqdm import tqdm
 MAX_LENGTH = 30
 
 def preparevocab(lang1, lang2,file_path):
@@ -84,9 +84,6 @@ def preparevocab(lang1, lang2,file_path):
     print("{} : {}".format(expans_vocab.name, expans_vocab.n_words))
     return f_vocab, expans_vocab,factors,expansions
 
-import torch
-from torch.utils.data import Dataset
-from tqdm import tqdm
 
 class InputFeatures(object):
   #to process data into ids
