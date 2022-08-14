@@ -194,6 +194,65 @@ def get_score(test_data,preds):
     c+=score(actuals[i],preds[i])
   print("Score: ",c/len(preds))
   return c/len(preds),actuals
+
+def custom_data_test(f_vocab,expans_vocab,collate_fn,args):
+  print("Test data has to be of type str and in the same format as the training data with both factors and expansions.")
+  print("The factors will be used to predict and the expansions will be used to evaluate and return scores.")
+  print("Reading data...")
+  # Read the file and split into lines
+  data = open(file_path, "r").readlines()
+  factors, expansions = zip(*[line.strip().split("=") for line in data])
+  custom_data = pd.DataFrame({'factors': factors,'expansions':expansions})
+  preds = test(custom_data,f_vocab,expans_vocab,collate_fn,args)
+  return preds
+  
+def predict_expans(f_vocab,expans_vocab, args):
+  factors = args.custom_factors
+  if torch.cuda.is_available():
+    device = 'cuda'
+  else:
+    device = 'cpu'
+  inputs = process_dataset.tensorFromSentence(f_vocab, factors,device)
+  transformer = model.Seq2SeqTransformer(f_vocab.n_words,expans_vocab.n_words,args.n_enc,args.n_dec, args.embedding_size,args.n_head,args.ffn).to(device)
+  transformer.load_state_dict(torch.load('transformer_model.pkl'))
+  transformer.eval()
+  num_tokens = len(inputs)
+  src_mask = (torch.zeros(num_tokens, num_tokens)).type(torch.bool)
+  src = inputs.to(device)
+  src_mask = src_mask.to(device)
+    
+  memory = transformer.encode(src, src_mask)
+  output_ids = []
+  ys = torch.ones(1, 1).fill_(0).type(torch.long).to(device)
+  for i in range(29):
+    memory = memory.to(device)
+    tgt_mask = (model.generate_square_subsequent_mask(ys.size(0))
+                    .type(torch.bool)).to(device)
+    out = transformer.decode(ys, memory, tgt_mask)
+    out = out.transpose(0, 1)
+    prob = transformer.fc(out[:, -1])
+    _, next_word = torch.max(prob, dim=1)
+    next_word = next_word.item()
+
+    ys = torch.cat([ys,torch.ones(1, 1).type_as(src.data).fill_(next_word)], dim=0)
+    if next_word == 1:
+      break
+      
+  pred_expansion = ys.cpu().numpy().reshape(-1)
+  for i in pred_expansion:
+    wrd = []
+    if i==0:
+      pass
+    elif i==1:
+      break
+    else:
+      wrd.append(expans_vocab.index2word[i])
+   preds = "".join(wrd)
+  
+  return preds
+    
+  
+  
   
   
 def main():
@@ -209,6 +268,8 @@ def main():
   parser.add_argument("--ffn", default= 512, type = int, help = "Size of the feedforward networks in transformer.")
   parser.add_argument("--n_enc" , default = 3, type = int, help = "Number of encoder layers in transformer.")
   parser.add_argument("--n_dec", default = 3, type = int, help = "Number of decoder layers in transformer.")
+  parser.add_argument("--custom_data_dir", default = None, type =str, help= "Directory of custom test data.")
+  parser.add_argument("--custom_factors", default = None, type = str, help = "Enter custom factors for immediate predictions.")
     
   args = parser.parse_args()
   print(args)
@@ -224,6 +285,12 @@ def main():
     train(train_data,val_data,f_vocab,expans_vocab,collate_fn,args)
   if args.do_test:
     preds = test(test_data,f_vocab,expans_vocab,collate_fn,args)
+    
+  if args.custom_data_dir is not None:
+    preds = custom_data_test(f_vocab,expans_vocab,collate_fn,args)
+    
+  if args.custom_factors is not None:
+    print("Predicted expansion: ",predict_expans(f_vocab,expans_vocab, args))
        
 if __name__ == "__main__":
     main()
