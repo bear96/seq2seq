@@ -11,6 +11,7 @@ import pickle
 from matplotlib import pyplot as plt
 import model
 import argparse
+from torchsummary import summary
 
 
 def train(train_data,val_data,f_vocab,expans_vocab,collate_fn,args):
@@ -52,7 +53,7 @@ def train(train_data,val_data,f_vocab,expans_vocab,collate_fn,args):
   val_dataloader = DataLoader(val_dataset,batch_size=args.batch_size,shuffle=False,collate_fn=collate_fn)
   train_loss = []
   valid_loss = []
-  for i in range(args.epochs):
+  for i in range(args.epoch):
     transformer.train()
     tr_loss = 0.0
     val_loss =0.0
@@ -110,6 +111,7 @@ def train(train_data,val_data,f_vocab,expans_vocab,collate_fn,args):
   PATH = "transformer_model.pkl"
 
   torch.save(transformer.state_dict(), PATH)
+
   
 def test(test_data,f_vocab,expans_vocab,collate_fn,args):
 
@@ -157,6 +159,12 @@ def test(test_data,f_vocab,expans_vocab,collate_fn,args):
         
     pred_expansions.append(ys.cpu().numpy().reshape(-1))
   preds = decode_token_ids(pred_expansions,expans_vocab,test_data)
+  model_stats = summary(transformer,[src, tgt_input, src_mask, tgt_mask,src_padding_mask, tgt_padding_mask, src_padding_mask],depth = 5)
+  with open('network.txt', 'wt') as f:
+    f.write(str(model_stats))
+    f.close()
+  
+  
   return preds
  
 def decode_token_ids(pred_expansions,tgt_lang,test_data):
@@ -258,7 +266,6 @@ def predict_expans(f_vocab,expans_vocab, args):
 def main():
   parser = argparse.ArgumentParser()
   parser.add_argument("--data_dir", default='train.txt', type=str, help="Directory of the dataset for training.")
-  parser.add_argument("--blocksize", default = 30, type = int, help = "Maximum length of sequence. Default = 30")
   parser.add_argument("--batch_size", default = 128, type = int, help = "Batch size for training and validation. Default = 32")
   parser.add_argument("--epoch", default = 20, type = int, help = "Number of epochs for training. Default = 10.")
   parser.add_argument("--do_train", action ='store_true',default= False, help = "Use if training.")
