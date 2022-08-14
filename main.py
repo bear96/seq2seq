@@ -247,7 +247,7 @@ def predict_expans(f_vocab,expans_vocab, args):
       break
     else:
       wrd.append(expans_vocab.index2word[i])
-   preds = "".join(wrd)
+  preds = "".join(wrd)
   
   return preds
     
