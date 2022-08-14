@@ -207,7 +207,7 @@ def custom_data_test(f_vocab,expans_vocab,collate_fn,args):
   return preds
   
 def predict_expans(f_vocab,expans_vocab, args):
-  factors = args.custom_factors
+  factors = args.custom_factors.strip('')
   if torch.cuda.is_available():
     device = 'cuda'
   else:
@@ -217,12 +217,12 @@ def predict_expans(f_vocab,expans_vocab, args):
   transformer.load_state_dict(torch.load('transformer_model.pkl'))
   transformer.eval()
   num_tokens = len(inputs)
+
   src_mask = (torch.zeros(num_tokens, num_tokens)).type(torch.bool)
   src = inputs.to(device)
   src_mask = src_mask.to(device)
     
   memory = transformer.encode(src, src_mask)
-  output_ids = []
   ys = torch.ones(1, 1).fill_(0).type(torch.long).to(device)
   for i in range(29):
     memory = memory.to(device)
@@ -239,8 +239,9 @@ def predict_expans(f_vocab,expans_vocab, args):
       break
       
   pred_expansion = ys.cpu().numpy().reshape(-1)
+  #print(pred_expansion)
+  wrd = []
   for i in pred_expansion:
-    wrd = []
     if i==0:
       pass
     elif i==1:
