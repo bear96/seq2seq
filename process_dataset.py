@@ -31,7 +31,7 @@ class PolyLang:
             self.word2count[word] += 1
 
 def readLangs(lang1,lang2, file_path):
-    print("Reading lines...")
+    print("Reading data...")
 
     # Read the file and split into lines
     data = open(file_path, "r").readlines()
