@@ -156,10 +156,10 @@ def test(test_data,f_vocab,expans_vocab,collate_fn,args):
         break
         
     pred_expansions.append(ys.cpu().numpy().reshape(-1))
-  preds = decode_token_ids(pred_expansions,expans_vocab)
+  preds = decode_token_ids(pred_expansions,expans_vocab,test_data)
   return preds
  
-def decode_token_ids(pred_expansions,tgt_lang):
+def decode_token_ids(pred_expansions,tgt_lang,test_data):
   preds = []
   for i in range(len(pred_expansions)):
     wrd = []
@@ -199,8 +199,7 @@ def custom_data_test(f_vocab,expans_vocab,collate_fn,args):
   print("Test data has to be of type str and in the same format as the training data with both factors and expansions.")
   print("The factors will be used to predict and the expansions will be used to evaluate and return scores.")
   print("Reading data...")
-  # Read the file and split into lines
-  data = open(file_path, "r").readlines()
+  data = open(args.custom_data_dir, "r").readlines()
   factors, expansions = zip(*[line.strip().split("=") for line in data])
   custom_data = pd.DataFrame({'factors': factors,'expansions':expansions})
   preds = test(custom_data,f_vocab,expans_vocab,collate_fn,args)
@@ -270,7 +269,7 @@ def main():
   parser.add_argument("--n_enc" , default = 3, type = int, help = "Number of encoder layers in transformer.")
   parser.add_argument("--n_dec", default = 3, type = int, help = "Number of decoder layers in transformer.")
   parser.add_argument("--custom_data_dir", default = None, type =str, help= "Directory of custom test data.")
-  parser.add_argument("--custom_factors", default = None, type = str, help = "Enter custom factors for immediate predictions.")
+  parser.add_argument("--custom_factors", default = None, type = str, help = "Enter custom factors for immediate predictions. Include single quotes around the factors for e.g., '(x-3)*(x-5)'")
     
   args = parser.parse_args()
   print(args)
