@@ -156,10 +156,10 @@ def test(test_data,f_vocab,expans_vocab,collate_fn,args):
         break
         
     pred_expansions.append(ys.cpu().numpy().reshape(-1))
-  preds = decode_token_ids(pred_expansions)
+  preds = decode_token_ids(pred_expansions,expans_vocab)
   return preds
  
-def decode_token_ids(pred_expansions):
+def decode_token_ids(pred_expansions,tgt_lang):
   preds = []
   for i in range(len(pred_expansions)):
     wrd = []
@@ -169,7 +169,7 @@ def decode_token_ids(pred_expansions):
       elif idx==1:
         break
       else:
-        wrd.append(expans_vocab.index2word[idx])
+        wrd.append(tgt_lang.index2word[idx])
       word = "".join(wrd)
     preds.append(word)
   s,actuals = get_score(test_data,preds)
