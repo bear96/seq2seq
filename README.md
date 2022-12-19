@@ -3,3 +3,5 @@ Sequence to sequence transformer model for expanding factors to polynomials in s
 Training loss:
 
 <img src="Loss_vs_Epoch.png">
+
+Accuracy acheived ~ 99%
